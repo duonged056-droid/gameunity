@@ -177,9 +177,17 @@ namespace DragonBallDefenders
             if (UnityEngine.InputSystem.Keyboard.current != null)
             {
                 if (code == KeyCode.B && UnityEngine.InputSystem.Keyboard.current.bKey.wasPressedThisFrame) return true;
+                return false;
             }
 #endif
-            return Input.GetKeyDown(code);
+            try
+            {
+                return Input.GetKeyDown(code);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         public void ToggleShopPanel()

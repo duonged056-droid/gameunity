@@ -135,6 +135,10 @@ namespace DragonBallDefenders
             blastObj.transform.localScale = Vector3.one * 0.8f;
 
             SpriteRenderer sr = blastObj.AddComponent<SpriteRenderer>();
+            sr.sprite = Resources.Load<Sprite>("Sprites/KiBlast") ?? Resources.Load<Sprite>("KiBlast");
+#if UNITY_EDITOR
+            if (sr.sprite == null) sr.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/KiBlast.png");
+#endif
             sr.color = new Color(1f, 0.9f, 0.2f, 1f);
             sr.sortingOrder = 10;
 
@@ -173,6 +177,10 @@ namespace DragonBallDefenders
                 beam.transform.localScale = new Vector3(14f, 1.4f, 1f);
                 beam.AddComponent<KamehamehaBeam>();
                 SpriteRenderer sr = beam.AddComponent<SpriteRenderer>();
+                sr.sprite = Resources.Load<Sprite>("Sprites/KamehamehaBeam") ?? Resources.Load<Sprite>("KamehamehaBeam");
+#if UNITY_EDITOR
+                if (sr.sprite == null) sr.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/KamehamehaBeam.png");
+#endif
                 sr.color = new Color(0.1f, 0.7f, 1f, 0.85f);
                 sr.sortingOrder = 15;
             }
@@ -206,6 +214,10 @@ namespace DragonBallDefenders
                 bomb.transform.position = spawnPos;
                 bomb.transform.localScale = Vector3.one * 1.8f;
                 SpriteRenderer sr = bomb.AddComponent<SpriteRenderer>();
+                sr.sprite = Resources.Load<Sprite>("Sprites/SpiritBomb") ?? Resources.Load<Sprite>("SpiritBomb");
+#if UNITY_EDITOR
+                if (sr.sprite == null) sr.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/SpiritBomb.png");
+#endif
                 sr.color = new Color(0.2f, 0.9f, 1f, 0.95f);
                 sr.sortingOrder = 20;
                 SpiritBomb sb = bomb.AddComponent<SpiritBomb>();
@@ -249,8 +261,19 @@ namespace DragonBallDefenders
 #if ENABLE_INPUT_SYSTEM
             if (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed) return true;
             if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.spaceKey.isPressed) return true;
+            if (UnityEngine.InputSystem.Mouse.current != null || UnityEngine.InputSystem.Keyboard.current != null)
+            {
+                return false;
+            }
 #endif
-            return Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space);
+            try
+            {
+                return Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private bool CheckKeyInput(KeyCode code)
@@ -261,9 +284,17 @@ namespace DragonBallDefenders
                 if (code == KeyCode.Q && UnityEngine.InputSystem.Keyboard.current.qKey.wasPressedThisFrame) return true;
                 if (code == KeyCode.E && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame) return true;
                 if (code == KeyCode.R && UnityEngine.InputSystem.Keyboard.current.rKey.wasPressedThisFrame) return true;
+                return false;
             }
 #endif
-            return Input.GetKeyDown(code);
+            try
+            {
+                return Input.GetKeyDown(code);
+            }
+            catch (System.InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private Vector3 GetMousePosition()
@@ -274,7 +305,14 @@ namespace DragonBallDefenders
                 return UnityEngine.InputSystem.Mouse.current.position.ReadValue();
             }
 #endif
-            return Input.mousePosition;
+            try
+            {
+                return Input.mousePosition;
+            }
+            catch (System.InvalidOperationException)
+            {
+                return Vector3.zero;
+            }
         }
     }
 }

@@ -43,7 +43,7 @@ namespace DragonBallDefenders
             // 3. Background
             GameObject bgGo = new GameObject("Environment_Background");
             SpriteRenderer bgSr = bgGo.AddComponent<SpriteRenderer>();
-            Sprite bgSprite = Resources.Load<Sprite>("Background") ?? LoadSpriteFromPath("Assets/Sprites/Background.jpg");
+            Sprite bgSprite = LoadSprite("Background", "Assets/Sprites/Background.jpg");
             if (bgSprite != null)
             {
                 bgSr.sprite = bgSprite;
@@ -56,7 +56,7 @@ namespace DragonBallDefenders
             GameObject altarGo = new GameObject("DragonBallAltar");
             altarGo.transform.position = new Vector3(-7.2f, 0, 0);
             SpriteRenderer altarSr = altarGo.AddComponent<SpriteRenderer>();
-            Sprite altarSprite = LoadSpriteFromPath("Assets/Sprites/DragonBallAltar.png");
+            Sprite altarSprite = LoadSprite("DragonBallAltar", "Assets/Sprites/DragonBallAltar.png");
             if (altarSprite != null)
             {
                 altarSr.sprite = altarSprite;
@@ -93,8 +93,8 @@ namespace DragonBallDefenders
             gokuGo.transform.position = new Vector3(-4.8f, 0, 0);
             gokuGo.tag = "Player";
             SpriteRenderer gokuSr = gokuGo.AddComponent<SpriteRenderer>();
-            Sprite gokuNormal = LoadSpriteFromPath("Assets/Sprites/Goku.png");
-            Sprite gokuSSJ = LoadSpriteFromPath("Assets/Sprites/GokuSSJ.png");
+            Sprite gokuNormal = LoadSprite("Goku", "Assets/Sprites/Goku.png");
+            Sprite gokuSSJ = LoadSprite("GokuSSJ", "Assets/Sprites/GokuSSJ.png");
             if (gokuNormal != null)
             {
                 gokuSr.sprite = gokuNormal;
@@ -111,13 +111,16 @@ namespace DragonBallDefenders
             auraObj.transform.localPosition = Vector3.zero;
             auraObj.transform.localScale = Vector3.one * 1.3f;
             SpriteRenderer auraSr = auraObj.AddComponent<SpriteRenderer>();
-            auraSr.sprite = LoadSpriteFromPath("Assets/Sprites/SpiritBomb.png");
+            auraSr.sprite = LoadSprite("SpiritBomb", "Assets/Sprites/SpiritBomb.png");
             auraSr.color = new Color(1f, 0.95f, 0.2f, 0.4f);
             auraSr.sortingOrder = 9;
             auraObj.SetActive(false);
 
             PlayerController pc = gokuGo.AddComponent<PlayerController>();
             DefenderAttack defAttack = gokuGo.AddComponent<DefenderAttack>();
+            defAttack.kiBlastPrefab = LoadPrefab("KiBlastPrefab");
+            defAttack.kamehamehaPrefab = LoadPrefab("KamehamehaPrefab");
+            defAttack.spiritBombPrefab = LoadPrefab("SpiritBombPrefab");
 
             // 8. GameManager
             GameObject gmGo = new GameObject("GameManager");
@@ -128,11 +131,21 @@ namespace DragonBallDefenders
             GameObject upgGo = new GameObject("UpgradeManager");
             UpgradeManager upg = upgGo.AddComponent<UpgradeManager>();
             upg.playerAttack = defAttack;
+            upg.bulmaTurretPrefab = LoadPrefab("BulmaTurretPrefab");
+            upg.vegetaPrefab = LoadPrefab("VegetaAllyPrefab");
+            upg.piccoloPrefab = LoadPrefab("PiccoloAllyPrefab");
 
             // 10. WaveSpawner
             GameObject spawnerGo = new GameObject("WaveSpawner");
             WaveSpawner spawner = spawnerGo.AddComponent<WaveSpawner>();
             spawner.paths = paths;
+            spawner.saibamenPrefab = LoadPrefab("SaibamenPrefab");
+            spawner.rrRobotPrefab = LoadPrefab("RRRobotPrefab");
+            spawner.rrTankPrefab = LoadPrefab("RRTankPrefab");
+            spawner.bossVegetaPrefab = LoadPrefab("BossVegetaPrefab");
+            spawner.bossFriezaPrefab = LoadPrefab("BossFriezaPrefab");
+            spawner.bossCellPrefab = LoadPrefab("BossCellPrefab");
+            spawner.bossBuuPrefab = LoadPrefab("BossBuuPrefab");
 
             // 11. Canvas UI
             BuildRuntimeUI(gm, altar, defAttack, spawner, upg);
@@ -174,7 +187,7 @@ namespace DragonBallDefenders
             slotGo.transform.position = pos;
 
             SpriteRenderer sr = slotGo.AddComponent<SpriteRenderer>();
-            sr.sprite = LoadSpriteFromPath("Assets/Sprites/KiBlast.png");
+            sr.sprite = LoadSprite("KiBlast", "Assets/Sprites/KiBlast.png");
             sr.color = new Color(0.2f, 1f, 0.4f, 0.6f);
             sr.sortingOrder = 1;
             slotGo.transform.localScale = Vector3.one * 0.9f;
@@ -182,13 +195,33 @@ namespace DragonBallDefenders
             slotGo.AddComponent<DefenderSlot>();
         }
 
-        private static Sprite LoadSpriteFromPath(string path)
+        private static Sprite LoadSprite(string name, string fallbackPath = null)
         {
+            Sprite s = Resources.Load<Sprite>("Sprites/" + name) ?? Resources.Load<Sprite>(name);
 #if UNITY_EDITOR
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
-#else
-            return null;
+            if (s == null && !string.IsNullOrEmpty(fallbackPath))
+            {
+                s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(fallbackPath);
+            }
+            if (s == null)
+            {
+                s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{name}.png");
+                if (s == null) s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{name}.jpg");
+            }
 #endif
+            return s;
+        }
+
+        private static GameObject LoadPrefab(string prefabName)
+        {
+            GameObject p = Resources.Load<GameObject>("Prefabs/" + prefabName) ?? Resources.Load<GameObject>(prefabName);
+#if UNITY_EDITOR
+            if (p == null)
+            {
+                p = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/{prefabName}.prefab");
+            }
+#endif
+            return p;
         }
 
         private static void BuildRuntimeUI(GameManager gm, DragonBallAltar altar, DefenderAttack playerAttack, WaveSpawner spawner, UpgradeManager upg)

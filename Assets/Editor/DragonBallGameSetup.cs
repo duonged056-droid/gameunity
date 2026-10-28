@@ -8,8 +8,23 @@ using DragonBallDefenders;
 
 namespace DragonBallDefenders.Editor
 {
+    [InitializeOnLoad]
     public class DragonBallGameSetup : EditorWindow
     {
+        static DragonBallGameSetup()
+        {
+            EditorApplication.delayCall += () =>
+            {
+                if (!Directory.Exists("Assets/Prefabs") || Directory.GetFiles("Assets/Prefabs", "*.prefab").Length == 0)
+                {
+                    Debug.Log("<color=cyan><b>[Dragon Ball Z] Auto-generating missing prefabs in Assets/Prefabs/...</b></color>");
+                    EnsureTagsExist();
+                    CreateAllPrefabs();
+                    AssetDatabase.Refresh();
+                }
+            };
+        }
+
         [MenuItem("Dragon Ball Z/Setup Complete Game Scene")]
         public static void SetupGame()
         {
@@ -22,7 +37,10 @@ namespace DragonBallDefenders.Editor
             BuildGameScene(prefabs);
 
             Debug.Log("<color=green><b>[Dragon Ball Z] Setup Complete! The game scene is 100% configured and ready to play!</b></color>");
-            EditorUtility.DisplayDialog("Dragon Ball: Bảo Vệ Ngọc Rồng", "Game scene has been completely generated and configured!\n\nPress PLAY in Unity to start defending the 7 Dragon Balls!", "OK");
+            if (!Application.isBatchMode)
+            {
+                EditorUtility.DisplayDialog("Dragon Ball: Bảo Vệ Ngọc Rồng", "Game scene has been completely generated and configured!\n\nPress PLAY in Unity to start defending the 7 Dragon Balls!", "OK");
+            }
         }
 
         private static void EnsureTagsExist()
@@ -30,7 +48,7 @@ namespace DragonBallDefenders.Editor
             SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
             SerializedProperty tagsProp = tagManager.FindProperty("tags");
 
-            string[] requiredTags = { "Enemy", "Base", "Projectile", "DropItem", "Defender", "Player" };
+            string[] requiredTags = { "Enemy", "Base", "Projectile", "DropItem", "Defender", "Player", "Boss" };
             foreach (string t in requiredTags)
             {
                 bool found = false;

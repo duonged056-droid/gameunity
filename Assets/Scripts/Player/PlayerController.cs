@@ -54,7 +54,14 @@ namespace DragonBallDefenders
                 return v;
             }
 #endif
-            return Input.GetAxisRaw("Vertical");
+            try
+            {
+                return Input.GetAxisRaw("Vertical");
+            }
+            catch (System.InvalidOperationException)
+            {
+                return 0f;
+            }
         }
 
         public void SetSuperSaiyanState(bool isSSJ)

@@ -141,20 +141,81 @@ namespace DragonBallDefenders
 
             // Find first available slot
             DefenderSlot[] slots = FindObjectsByType<DefenderSlot>();
+            DefenderSlot targetSlot = null;
             foreach (var slot in slots)
             {
                 if (!slot.isOccupied)
                 {
-                    slot.DeployAlly(prefab);
-                    SoundManager.Instance?.PlaySuperSaiyanSound();
-                    OnUpgradePurchased?.Invoke();
-                    return true;
+                    targetSlot = slot;
+                    break;
                 }
             }
 
-            // If no slot was available, refund Zeni
-            GameManager.Instance.AddZeni(cost);
-            return false;
+            if (targetSlot == null)
+            {
+                // If no slot was available, refund Zeni
+                GameManager.Instance.AddZeni(cost);
+                return false;
+            }
+
+            if (prefab != null)
+            {
+                targetSlot.DeployAlly(prefab);
+            }
+            else
+            {
+                GameObject proceduralAlly = CreateProceduralAlly(type, targetSlot.transform.position);
+                targetSlot.currentAlly = proceduralAlly.GetComponent<TurretAlly>();
+                targetSlot.isOccupied = true;
+            }
+
+            SoundManager.Instance?.PlaySuperSaiyanSound();
+            OnUpgradePurchased?.Invoke();
+            return true;
+        }
+
+        private GameObject CreateProceduralAlly(AllyType type, Vector3 position)
+        {
+            string allyName = type == AllyType.BulmaTurret ? "Bulma Laser Turret" :
+                              (type == AllyType.Vegeta ? "Vegeta (Big Bang)" : "Piccolo (Makanko)");
+            int dmg = type == AllyType.BulmaTurret ? 25 : (type == AllyType.Vegeta ? 50 : 80);
+            float rate = type == AllyType.BulmaTurret ? 2.2f : (type == AllyType.Vegeta ? 1.5f : 0.9f);
+            float range = type == AllyType.BulmaTurret ? 7.5f : (type == AllyType.Vegeta ? 8.5f : 9.5f);
+
+            GameObject go = new GameObject(allyName);
+            go.transform.position = position;
+
+            SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 5;
+
+            string spriteName = type == AllyType.BulmaTurret ? "BulmaTurret" : (type == AllyType.Vegeta ? "VegetaAlly" : "PiccoloAlly");
+            Sprite s = Resources.Load<Sprite>("Sprites/" + spriteName) ?? Resources.Load<Sprite>(spriteName);
+#if UNITY_EDITOR
+            if (s == null)
+            {
+                s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{spriteName}.png");
+            }
+#endif
+            if (s != null)
+            {
+                sr.sprite = s;
+            }
+            else
+            {
+                sr.color = type == AllyType.BulmaTurret ? Color.cyan : (type == AllyType.Vegeta ? Color.blue : Color.green);
+            }
+
+            BoxCollider2D col = go.AddComponent<BoxCollider2D>();
+            col.isTrigger = true;
+            col.size = new Vector2(0.8f, 0.8f);
+
+            TurretAlly ally = go.AddComponent<TurretAlly>();
+            ally.allyType = type;
+            ally.allyName = allyName;
+            ally.attackDamage = dmg;
+            ally.attackRate = rate;
+            ally.attackRange = range;
+            return go;
         }
     }
 }

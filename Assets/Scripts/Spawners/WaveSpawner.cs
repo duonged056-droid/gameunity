@@ -215,7 +215,20 @@ namespace DragonBallDefenders
             go.transform.position = spawnPos;
 
             SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-            sr.color = isBomber ? new Color(0.3f, 0.8f, 0.2f, 1f) : new Color(0.85f, 0.2f, 0.2f, 1f);
+            string sName = isBomber ? "Saibamen" : "RRRobot";
+            Sprite s = Resources.Load<Sprite>("Sprites/" + sName) ?? Resources.Load<Sprite>(sName);
+#if UNITY_EDITOR
+            if (s == null) s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{sName}.png");
+#endif
+            if (s != null)
+            {
+                sr.sprite = s;
+                sr.color = Color.white;
+            }
+            else
+            {
+                sr.color = isBomber ? new Color(0.3f, 0.8f, 0.2f, 1f) : new Color(0.85f, 0.2f, 0.2f, 1f);
+            }
             sr.sortingOrder = 5;
 
             Rigidbody2D rb = go.AddComponent<Rigidbody2D>();
@@ -261,7 +274,20 @@ namespace DragonBallDefenders
         {
             GameObject go = new GameObject("Boss_" + bName);
             SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-            sr.color = new Color(0.7f, 0.15f, 0.85f, 1f);
+            string sName = bName.Contains("Vegeta") ? "BossVegeta" : (bName.Contains("Frieza") ? "BossFrieza" : (bName.Contains("Cell") ? "BossCell" : "BossBuu"));
+            Sprite s = Resources.Load<Sprite>("Sprites/" + sName) ?? Resources.Load<Sprite>(sName);
+#if UNITY_EDITOR
+            if (s == null) s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/{sName}.png");
+#endif
+            if (s != null)
+            {
+                sr.sprite = s;
+                sr.color = Color.white;
+            }
+            else
+            {
+                sr.color = new Color(0.7f, 0.15f, 0.85f, 1f);
+            }
             sr.sortingOrder = 6;
             go.transform.localScale = Vector3.one * 1.5f;
 

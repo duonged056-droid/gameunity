@@ -9,6 +9,8 @@ TagManager:
   - Projectile
   - DropItem
   - Defender
+  - Boss
+  - Player
   layers:
   - Default
   - TransparentFX
